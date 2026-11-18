@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prajus – Gestão jurídica</title><link rel="icon" href="/static/brand/icone.png">
+<style>
+:root{--nv:#1D2F4D;--bl:#2F5C8E;--go:#CFA75B;--bg:#F4F5F7;--sf:#fff;--ink:#1a2233;--mut:#5d6778;--ln:#dfe3ea;--rd:#b3261e;--am:#7a5200;--ams:#fbf0d6;--acs:color-mix(in srgb,var(--bl) 12%,var(--sf));--acx:var(--bl)}
+@media(prefers-color-scheme:dark){:root{--bg:#0f1624;--sf:#172033;--ink:#e9edf5;--mut:#9aa6ba;--ln:#27324a;--am:#f0c978;--ams:#3a2d10;--rd:#ff8f86;--acx:color-mix(in srgb,var(--bl) 45%,#fff)}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 ui-rounded,"Avenir Next","Segoe UI",system-ui,sans-serif}
+h1,h2,h3{font-weight:700;margin:0;letter-spacing:-.01em}h1{font-size:27px}h1:after{content:"";display:block;width:34px;height:3px;border-radius:2px;background:var(--go);margin-top:6px}h2{font-size:18px;margin-bottom:8px}
+button,input,select,textarea{font:inherit;color:inherit}:focus-visible{outline:2px solid var(--go);outline-offset:2px}
+.app{display:grid;grid-template-columns:232px 1fr;min-height:100vh}
+nav{background:var(--nv);color:#e9edf5;position:sticky;top:0;height:100vh;display:flex;flex-direction:column;gap:2px;padding:0 10px 16px}
+nav .brand{background:#fff;margin:0 -10px 14px;padding:16px 14px;border-bottom:3px solid var(--go)}nav .brand img{display:block;width:100%;max-height:64px;object-fit:contain}
+nav a{padding:8px 10px;border-radius:6px;cursor:pointer}nav a:hover{background:#ffffff18}nav a.on{background:#ffffff22;font-weight:600;box-shadow:inset 3px 0 var(--go)}nav .sp{flex:1}nav small{padding:0 10px 6px;opacity:.75}
+main{padding:22px 28px 60px;max-width:1050px;width:100%}
+input,select,textarea{background:var(--sf);border:1px solid var(--ln);border-radius:8px;padding:8px 10px;width:100%}
+input[type=checkbox]{width:auto;margin-right:6px}input[type=color]{width:56px;height:38px;padding:2px;cursor:pointer}
+.btn{background:var(--bl);color:#fff;border:0;border-radius:8px;padding:8px 14px;cursor:pointer;font-weight:600;width:auto;white-space:nowrap}.btn:hover{filter:brightness(1.1)}
+.btn.g{background:transparent;color:var(--ink);border:1px solid var(--ln)}.btn.s{padding:3px 9px;font-size:13px}.btn[disabled]{opacity:.45;cursor:not-allowed}
+.hd{display:flex;justify-content:space-between;align-items:end;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.box{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:14px 16px;margin-bottom:14px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.row{display:flex;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--ln)}.row:first-of-type{border-top:0}
+.row .t{flex:1;min-width:0}.row .t div,.mu{font-size:13px;color:var(--mut)}
+.pill{font-size:12px;padding:1px 9px;border-radius:99px;background:var(--acs);color:var(--acx);font-weight:600}.pill.a{background:var(--ams);color:var(--am)}
+.tl{border-left:2px solid var(--go);padding-left:14px}.tl div{margin-bottom:8px}
+dialog{border:1px solid var(--ln);border-radius:12px;background:var(--sf);color:var(--ink);width:min(480px,94vw);padding:20px}dialog::backdrop{background:#0008}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 3px}.acts{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}.er{color:var(--rd);font-size:13px;min-height:1em;margin:8px 0 0}
+.lg{min-height:100vh;display:grid;place-items:center;padding:24px;background:var(--nv)}.lgc{width:min(410px,100%);background:var(--sf);border:1px solid var(--ln);border-top:4px solid var(--go);border-radius:14px;padding:28px}
+.lgo{display:block;margin:0 auto 10px;width:190px;max-width:70%;border-radius:6px}
+.so{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:44px;margin-top:10px;border-radius:8px;border:1px solid var(--ln);background:var(--sf);cursor:pointer;font-weight:600}.so svg{width:18px;height:18px;fill:currentColor}
+.or{display:flex;align-items:center;gap:10px;color:var(--mut);font-size:13px;margin:16px 0 0}.or:before,.or:after{content:"";flex:1;border-top:1px solid var(--ln)}
+#gbtn{margin-top:14px;min-height:44px;display:flex;justify-content:center}
+.prev{height:52px;width:150px;object-fit:contain;background:#fff;border:1px solid var(--ln);border-radius:8px;padding:4px}
+.sw{display:flex;align-items:center;gap:12px;padding:8px 0}.sw .t{flex:1}
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:8px;display:none;z-index:9;max-width:90vw}
+@media(max-width:760px){.app{grid-template-columns:1fr}nav{position:static;height:auto;flex-direction:row;flex-wrap:wrap;padding:0 8px 8px}nav .brand{width:calc(100% + 16px);margin:0 -8px 8px;padding:10px}nav .brand img{max-height:40px}nav .sp,nav small{display:none}main{padding:16px 14px 60px}.prev{width:100px}}
+</style></head>
+<body><div id="app"></div><dialog id="dlg"></dialog><div id="toast" role="status"></div>
+<script>
+const $=s=>document.querySelector(s),dlg=$("#dlg");
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fd=d=>d?String(d).slice(0,10).split("-").reverse().join("/"):"—";
+let T=null,ME=null,CFG={},route="hoje",arg=null,QS="",K=0;
+try{T=sessionStorage.getItem("pj")}catch(e){}
+const setT=t=>{T=t;try{t?sessionStorage.setItem("pj",t):sessionStorage.removeItem("pj")}catch(e){}};
+const can=k=>ME&&ME.permissoes.includes(k);
+function toast(m){const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toast.h);toast.h=setTimeout(()=>t.style.display="none",3200)}
+async function api(m,u,b,form){
+  const h={};if(T)h.Authorization="Bearer "+T;if(b&&!form)h["Content-Type"]="application/json";
+  const r=await fetch(u,{method:m,headers:h,body:form||(b?JSON.stringify(b):undefined)});
+  let j={};try{j=await r.json()}catch(e){}
+  if(r.status===401&&T&&!u.startsWith("/auth/login")&&!u.startsWith("/auth/oauth")){setT(null);ME=null;loginView();throw new Error("Sessão expirada. Entre novamente.")}
+  if(!r.ok){const c=j.campos?Object.entries(j.campos).map(([k,v])=>k+": "+v).join("; "):"";throw Object.assign(new Error((j.erro||"Erro")+(c?" ("+c+")":"")),{status:r.status,data:j})}
+  return j}
+function ask(title,html,onok,label="Salvar"){
+  const k=++K;dlg.dataset.k=k;
+  dlg.innerHTML=`<h2>${title}</h2>${html}<p class="er" id="err"></p><div class="acts"><button class="btn g" onclick="dlg.close()">Cancelar</button><button class="btn" id="ok">${label}</button></div>`;
+  dlg.showModal();
+  $("#ok").onclick=async()=>{try{await onok();if(+dlg.dataset.k===k)dlg.close()}catch(e){const x=$("#err");if(x)x.textContent=e.message}}}
+const val=id=>$("#"+id).value.trim();
+
+/* ---------- login ---------- */
+const GI='<svg viewBox="0 0 24 24"><path d="M16.37 1.43c0 1.14-.5 2.27-1.18 3.08-.74.9-1.99 1.57-2.99 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.57-2.27 1.21-2.98.8-.94 2.14-1.64 3.25-1.68.03.13.05.28.05.43zm4.56 15.71c-.03.07-.46 1.58-1.52 3.12-.94 1.34-1.94 2.71-3.43 2.71-1.52 0-1.9-.88-3.63-.88-1.7 0-2.3.91-3.67.91-1.38 0-2.33-1.26-3.43-2.8-1.29-1.82-2.32-4.63-2.32-7.28 0-4.28 2.8-6.55 5.55-6.55 1.45 0 2.68.95 3.6.95.87 0 2.22-1.01 3.9-1.01.61 0 2.89.06 4.37 2.19-.13.09-2.38 1.37-2.38 4.19 0 3.26 2.85 4.42 2.96 4.45z"/></svg>';
+function loginView(){
+  $("#app").innerHTML=`<div class="lg"><div class="lgc"><img class="lgo" data-logo="vertical" src="/static/brand/vertical.png" alt="Prajus"><p class="mu" style="text-align:center">Gestão jurídica para advogados autônomos e pequenos escritórios.</p>
+  <div id="gbtn"></div><button class="so" id="abtn">${GI} Continuar com Apple</button><div class="or">ou use seu e-mail</div>
+  <label for="le">E-mail</label><input id="le" type="email" autocomplete="username"><label for="lp">Senha</label><input id="lp" type="password" autocomplete="current-password" onkeydown="if(event.key=='Enter')emailLogin()">
+  <button class="btn" style="width:100%;margin-top:14px" onclick="emailLogin()">Entrar</button>
+  <p class="mu" style="margin-top:14px"><a href="#" onclick="signup();return false">Criar conta</a> · <a href="#" onclick="forgot();return false">Esqueci a senha</a></p></div></div>`;
+  initGoogle();initApple()}
+function loadScript(src,cb){const s=document.createElement("script");s.src=src;s.async=true;s.onload=cb;s.onerror=()=>toast("Não foi possível carregar "+new URL(src).hostname);document.head.appendChild(s)}
+function initGoogle(){
+  if(!CFG.google){$("#gbtn").innerHTML='<button class="so" disabled style="margin:0">Google não configurado no servidor</button>';return}
+  loadScript("https://accounts.google.com/gsi/client",()=>{google.accounts.id.initialize({client_id:CFG.google,callback:r=>social("google",r.credential)});
+    google.accounts.id.renderButton($("#gbtn"),{theme:"outline",size:"large",text:"continue_with",width:340,locale:"pt-BR"})})}
+function initApple(){
+  const b=$("#abtn");if(!CFG.apple){b.disabled=true;b.textContent="Apple não configurado no servidor";return}
+  loadScript("https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/pt_BR/appleid.auth.js",()=>AppleID.auth.init({clientId:CFG.apple,scope:"name email",redirectURI:CFG.appleRedirect||location.origin,usePopup:true}));
+  b.onclick=async()=>{try{const r=await AppleID.auth.signIn(),n=r.user&&r.user.name;
+    social("apple",r.authorization.id_token,n?[n.firstName,n.lastName].filter(Boolean).join(" "):undefined)}
+    catch(e){if(!e||e.error!=="popup_closed_by_user")toast("Não foi possível entrar com a Apple.")}}}
+async function finish(r){setT(r.token);ME=await api("GET","/auth/eu");shell()}
+async function social(p,idt,nome,extra={}){
+  try{await finish(await api("POST","/auth/oauth/"+p,{id_token:idt,nome,...extra}))}
+  catch(e){
+    if(e.status===428)return ask("Criar conta",`<p>Não há conta para <b>${esc(e.data.email)}</b>. Aceite os termos para criar seu escritório.</p><label>Nome do escritório</label><input id="org"><label><input type="checkbox" id="t1">Li e aceito os termos de uso</label><label><input type="checkbox" id="t2">Li a política de privacidade</label>`,
+      ()=>{if(!$("#t1").checked||!$("#t2").checked)throw new Error("Aceite os dois itens.");return social(p,idt,nome,{termos:true,privacidade:true,organizacao:val("org")||undefined})},"Criar conta");
+    if(e.data&&e.data.mfa)return ask("Verificação em duas etapas",`<label>Código do aplicativo autenticador</label><input id="cod" inputmode="numeric">`,()=>social(p,idt,nome,{codigo:val("cod")}),"Entrar");
+    toast(e.message)}}
+async function emailLogin(code){
+  try{await finish(await api("POST","/auth/login",{email:val("le"),senha:$("#lp").value,codigo:code}))}
+  catch(e){if(e.data&&e.data.mfa){const em=val("le"),pw=$("#lp").value;return ask("Verificação em duas etapas",`<label>Código do aplicativo autenticador</label><input id="cod" inputmode="numeric">`,async()=>finish(await api("POST","/auth/login",{email:em,senha:pw,codigo:val("cod")})),"Entrar")}toast(e.message)}}
+function signup(){ask("Criar conta",`<label>Seu nome</label><input id="n"><label>Nome do escritório</label><input id="o"><label>OAB (opcional)</label><input id="oab"><label>E-mail</label><input id="e" type="email"><label>Senha (10+ caracteres, letras e números)</label><input id="s" type="password"><label>Confirmar senha</label><input id="c" type="password"><label><input type="checkbox" id="t1">Aceito os termos de uso</label><label><input type="checkbox" id="t2">Li a política de privacidade</label>`,async()=>{
+  const r=await api("POST","/auth/cadastro",{nome:val("n"),organizacao:val("o"),oab:val("oab"),email:val("e"),senha:$("#s").value,confirmacao:$("#c").value,termos:$("#t1").checked,privacidade:$("#t2").checked});
+  if(r.token_verificacao_dev){await api("POST","/auth/verificar-email",{token:r.token_verificacao_dev});toast("Conta criada (modo desenvolvimento: e-mail confirmado). Já pode entrar.")}else toast("Enviamos um e-mail para confirmar sua conta.")},"Criar conta")}
+function forgot(){ask("Recuperar senha",`<label>E-mail</label><input id="e" type="email">`,async()=>{await api("POST","/auth/esqueci-senha",{email:val("e")});toast("Se o e-mail existir, enviaremos instruções.")},"Enviar")}
+function acceptView(tok){$("#app").innerHTML=`<div class="lg"><div class="lgc"><img class="lgo" data-logo="vertical" src="/static/brand/vertical.png" alt="Prajus"><p class="mu">Você foi convidado. Defina seu acesso.</p><label>Seu nome</label><input id="n"><label>Senha (10+ caracteres, letras e números)</label><input id="s" type="password"><p class="er" id="err"></p><button class="btn" style="width:100%" id="ok">Aceitar convite</button></div></div>`;
+  $("#ok").onclick=async()=>{try{await api("POST","/convites/aceitar",{token:tok,nome:val("n"),senha:$("#s").value});history.replaceState(null,"",location.pathname);toast("Convite aceito. Entre com seu e-mail.");loginView()}catch(e){$("#err").textContent=e.message}}}
+function resetView(tok){$("#app").innerHTML=`<div class="lg"><div class="lgc"><img class="lgo" data-logo="vertical" src="/static/brand/vertical.png" alt="Prajus"><h2>Nova senha</h2><label>Senha (10+ caracteres, letras e números)</label><input id="s" type="password"><p class="er" id="err"></p><button class="btn" style="width:100%" id="ok">Salvar</button></div></div>`;
+  $("#ok").onclick=async()=>{try{await api("POST","/auth/redefinir-senha",{token:tok,senha:$("#s").value});history.replaceState(null,"",location.pathname);toast("Senha alterada.");loginView()}catch(e){$("#err").textContent=e.message}}}
+
+/* ---------- aplicativo ---------- */
+const NAV=[["hoje","Hoje"],["casos","Casos"],["clientes","Clientes"],["equipe","Equipe","users"],["auditoria","Auditoria","audit"],["aparencia","Aparência","brand"]];
+function shell(){
+  $("#app").innerHTML=`<div class="app"><nav><div class="brand"><img data-logo="horizontal" src="/static/brand/horizontal.png" alt="Prajus"></div>${NAV.filter(n=>!n[2]||can(n[2])).map(n=>`<a data-r="${n[0]}" onclick="go('${n[0]}')">${n[1]}</a>`).join("")}<div class="sp"></div><small>${esc(ME.usuario.nome)}<br>${esc(ME.usuario.email)}<br>${esc(ME.usuario.role)}</small><a onclick="logout()">Sair</a></nav><main id="main"></main></div>`;
+  api("GET","/marca").then(applyBrand).catch(()=>{});go("hoje")}
+async function logout(){try{await api("POST","/auth/logout")}catch(e){}setT(null);ME=null;loginView()}
+async function go(r,a){route=r;arg=a||null;document.querySelectorAll("nav a[data-r]").forEach(x=>x.classList.toggle("on",x.dataset.r==(r=="caso"?"casos":r)));
+  const m=$("#main");m.innerHTML='<p class="mu">Carregando…</p>';try{m.innerHTML=await V[r]();window.scrollTo(0,0)}catch(e){m.innerHTML=`<p class="er">${esc(e.message)}</p>`}}
+const W=()=>can("write")?"":"disabled";
+const list=(a,f,empty)=>a.length?a.map(f).join(""):`<div class="mu">${empty}</div>`;
+const itemRow=i=>`<div class="row"><div class="t"><b>${esc(i.titulo)}</b><div>${esc(i.tipo)} · ${i.caso_titulo?esc(i.caso_titulo)+" · ":""}${fd(i.data)} · ${esc(i.status)}${i.tipo=="Prazo"&&!i.revisado?' · <span class="pill a">aguarda revisão</span>':""}</div></div>${i.status=="Pendente"?`<button class="btn s g" ${W()} onclick="act('done',${i.id})">Concluir</button>`:""}${i.tipo=="Prazo"&&!i.revisado?`<button class="btn s g" ${W()} onclick="act('ok',${i.id})">Confirmar prazo</button>`:""}</div>`;
+async function act(k,id){try{k=="done"?await api("PATCH","/itens/"+id,{status:"Concluída"}):await api("POST","/itens/"+id+"/confirmar");go(route,arg)}catch(e){toast(e.message)}}
+const V={
+async hoje(){const h=await api("GET","/hoje"),box=(t,a,f,e)=>`<div class="box"><h2>${t}</h2>${list(a,f,e)}</div>`;
+  return`<div class="hd"><h1>Hoje</h1></div><div class="cols">`+box("Vencidas",h.vencidas,itemRow,"Nada vencido.")+box("Para hoje",h.hoje,itemRow,"Nada para hoje.")+box("Prazos nos próximos 10 dias",h.prazos,itemRow,"Sem prazos próximos.")+box("Casos sem próxima ação",h.casos_sem_proxima_acao,c=>`<div class="row"><div class="t"><b>${esc(c.titulo)}</b></div><button class="btn s g" onclick="go('caso',${c.id})">Abrir</button></div>`,"Todos têm próxima ação.")+`</div>`},
+async casos(){const [r,cl]=await Promise.all([api("GET","/casos?limite=100"+(QS?"&q="+encodeURIComponent(QS):"")),api("GET","/clientes?limite=100")]),nm=Object.fromEntries(cl.itens.map(c=>[c.id,c.nome]));
+  return`<div class="hd"><h1>Casos</h1><div><input id="qs" placeholder="Buscar" value="${esc(QS)}" style="width:200px" onkeydown="if(event.key=='Enter'){QS=this.value;go('casos')}"> <button class="btn" ${W()} onclick="newCase()">Novo caso</button></div></div><div class="box">${list(r.itens,c=>`<div class="row"><div class="t"><b><a href="#" style="color:inherit" onclick="go('caso',${c.id});return false">${esc(c.titulo)}</a></b><div>${esc(nm[c.client_id]||"—")} · ${esc(c.area||"—")} · Próxima ação: ${c.prox_acao?esc(c.prox_acao)+" ("+fd(c.prox_data)+")":"não definida"}</div></div><span class="pill">${esc(c.status)}</span></div>`,"Nenhum caso. Crie o primeiro.")}</div>`},
+async caso(){const [c,it,dc,tl]=await Promise.all([api("GET","/casos/"+arg),api("GET","/itens?limite=100&case_id="+arg),api("GET","/documentos?caso="+arg),api("GET","/casos/"+arg+"/linha-do-tempo")]);
+  return`<div class="hd"><div><h1>${esc(c.titulo)}</h1><span class="pill">${esc(c.status)}</span></div><div><button class="btn g" ${W()} onclick="setProx(${c.id})">Próxima ação</button> <button class="btn g" ${can("archive")?"":"disabled"} onclick="archive('casos',${c.id})">Arquivar</button></div></div>
+  <div class="box"><p>${esc(c.numero||"Sem número")} · ${esc(c.area||"—")}<br>Próxima ação: ${c.prox_acao?esc(c.prox_acao)+" ("+fd(c.prox_data)+")":"não definida"}</p><p class="mu">${esc(c.obs||"")}</p></div>
+  <div class="box"><div class="hd"><h2>Tarefas, prazos e compromissos</h2><button class="btn s" ${W()} onclick="newItem(${c.id})">Adicionar</button></div>${list(it.itens,itemRow,"Nada cadastrado.")}</div>
+  <div class="box"><div class="hd"><h2>Documentos</h2><button class="btn s" ${W()} onclick="upload(${c.id})">Enviar arquivo</button></div>${list(dc,d=>`<div class="row"><div class="t"><b>${esc(d.nome)}</b><div>${esc(d.tipo||"")} · versão ${d.versao} · ${fd(d.created_at)}</div></div><button class="btn s g" onclick="dl(${d.id},${d.versao},'${esc(d.nome).replace(/'/g,"")}')">Baixar</button><button class="btn s g" ${W()} onclick="upload(${c.id},${d.id})">Nova versão</button></div>`,"Nenhum documento.")}</div>
+  <div class="box"><h2>Linha do tempo</h2><div class="tl">${list(tl,e=>`<div>${esc(e.txt)}<div class="mu">${fd(e.at)} · ${esc(e.autor||"")}</div></div>`,"Sem eventos.")}</div></div>`},
+async clientes(){const r=await api("GET","/clientes?limite=100");
+  return`<div class="hd"><h1>Clientes</h1><button class="btn" ${W()} onclick="newCli()">Novo cliente</button></div><div class="box">${list(r.itens,c=>`<div class="row"><div class="t"><b>${esc(c.nome)}</b><div>${esc(c.doc||"")} ${esc(c.email||"")} ${esc(c.tel||"")}</div></div><button class="btn s g" ${can("archive")?"":"disabled"} onclick="archive('clientes',${c.id})">Arquivar</button></div>`,"Nenhum cliente.")}</div>`},
+async equipe(){const [u,i]=await Promise.all([api("GET","/usuarios"),api("GET","/convites")]);
+  return`<div class="hd"><h1>Equipe</h1><button class="btn" onclick="invite()">Convidar</button></div><div class="box"><h2>Usuários</h2>${list(u,x=>`<div class="row"><div class="t"><b>${esc(x.nome)}</b><div>${esc(x.email)} · ${esc(x.role)} · ${esc(x.status)}</div></div></div>`,"—")}</div><div class="box"><h2>Convites</h2>${list(i,x=>`<div class="row"><div class="t"><b>${esc(x.email)}</b><div>${esc(x.role)} · ${x.accepted_at?"aceito":x.revoked_at?"revogado":"pendente até "+fd(x.expires_at)}</div></div>${!x.accepted_at&&!x.revoked_at?`<button class="btn s g" onclick="revoke(${x.id})">Revogar</button>`:""}</div>`,"Nenhum convite.")}</div>`},
+async aparencia(){const b=await api("GET","/marca");applyBrand(b);const P={horizontal:["Logotipo horizontal","Menu lateral. Fundo claro."],vertical:["Logotipo vertical","Tela de entrada. Fundo claro."],icone:["Ícone","Aba do navegador e atalhos."]};
+  const C=[["azul_escuro","Azul corporativo (menu e entrada)"],["azul","Azul (botões e destaques)"],["dourado","Dourado (detalhes)"]];
+  return`<div class="hd"><h1>Aparência</h1><button class="btn g" onclick="resetBrand()">Restaurar identidade padrão</button></div>
+  <div class="box"><h2>Logotipos</h2><p class="mu">PNG, JPG, WEBP ou SVG, até 600 KB. Prefira arquivos originais em alta resolução, com fundo transparente ou branco.</p>${Object.entries(P).map(([k,[t,d]])=>`<div class="row"><img class="prev" data-logo="${k}" src="${BRAND_DEF[k]}" alt=""><div class="t"><b>${t}</b><div>${d}${b.logos[k]?" · personalizado":" · padrão Prajus"}</div></div><button class="btn s" onclick="upLogo('${k}')">Trocar</button><button class="btn s g" ${b.logos[k]?"":"disabled"} onclick="resetLogo('${k}')">Padrão</button></div>`).join("")}</div>
+  <div class="box"><h2>Cores</h2>${C.map(([k,t])=>`<div class="sw"><input type="color" id="c_${k}" value="${b.cores[k].toLowerCase()}" aria-label="${t}" oninput="previewColor()"><div class="t"><b>${t}</b><div class="mu" id="h_${k}">${b.cores[k]}</div></div></div>`).join("")}<div class="acts"><button class="btn g" onclick="resetColors()">Voltar à Paleta A</button><button class="btn" onclick="saveColors()">Salvar cores</button></div></div>`},
+async auditoria(){const a=await api("GET","/auditoria");return`<div class="hd"><h1>Auditoria</h1></div><div class="box">${list(a,x=>`<div class="row"><div class="t"><b>${esc(x.acao)}</b><div>${esc(x.usuario||"sistema")} · ${new Date(x.at).toLocaleString("pt-BR")}</div></div></div>`,"Sem registros.")}</div>`}};
+/* identidade visual */
+const BRAND_DEF={horizontal:"/static/brand/horizontal.png",vertical:"/static/brand/vertical.png",icone:"/static/brand/icone.png"},CK={azul_escuro:"--nv",azul:"--bl",dourado:"--go"};
+function applyBrand(b){const r=document.documentElement.style;Object.entries(CK).forEach(([k,v])=>r.setProperty(v,b.cores[k]));
+  document.querySelectorAll("[data-logo]").forEach(i=>i.src=b.logos[i.dataset.logo]||BRAND_DEF[i.dataset.logo]);
+  const l=document.querySelector("link[rel=icon]");if(l)l.href=b.logos.icone||BRAND_DEF.icone}
+function previewColor(){Object.entries(CK).forEach(([k,v])=>{const i=$("#c_"+k);document.documentElement.style.setProperty(v,i.value);$("#h_"+k).textContent=i.value.toUpperCase()})}
+async function saveColors(){try{applyBrand(await api("PUT","/marca/cores",Object.fromEntries(Object.keys(CK).map(k=>[k,$("#c_"+k).value]))));toast("Cores salvas.")}catch(e){toast(e.message)}}
+async function resetColors(){try{const b=await api("GET","/marca");applyBrand(await api("PUT","/marca/cores",b.padrao));go("aparencia")}catch(e){toast(e.message)}}
+function upLogo(slot){ask("Trocar logotipo",`<label>Arquivo (PNG, JPG, WEBP ou SVG, até 600 KB)</label><input id="f" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">`,async()=>{const f=$("#f").files[0];if(!f)throw new Error("Escolha um arquivo.");const fm=new FormData();fm.append("arquivo",f);applyBrand(await api("POST","/marca/logo/"+slot,null,fm));go("aparencia")},"Enviar")}
+async function resetLogo(slot){try{applyBrand(await api("DELETE","/marca/logo/"+slot));go("aparencia")}catch(e){toast(e.message)}}
+async function resetBrand(){if(!confirm("Restaurar logotipos e cores padrão do Prajus?"))return;try{applyBrand(await api("POST","/marca/restaurar"));go("aparencia")}catch(e){toast(e.message)}}
+async function archive(k,id){if(!confirm("Arquivar? Você poderá restaurar depois."))return;try{await api("DELETE","/"+k+"/"+id);go(k=="casos"?"casos":"clientes")}catch(e){toast(e.message)}}
+function newCli(){ask("Novo cliente",`<label>Nome</label><input id="n"><label>CPF/CNPJ</label><input id="d"><label>E-mail</label><input id="e" type="email"><label>Telefone</label><input id="t">`,async()=>{await api("POST","/clientes",{nome:val("n"),doc:val("d"),email:val("e"),tel:val("t")});go("clientes")})}
+async function newCase(){const cl=await api("GET","/clientes?limite=100");if(!cl.itens.length)return toast("Cadastre um cliente primeiro.");
+  ask("Novo caso",`<label>Título</label><input id="n"><label>Cliente</label><select id="c">${cl.itens.map(c=>`<option value="${c.id}">${esc(c.nome)}</option>`).join("")}</select><label>Número do processo</label><input id="p"><label>Área</label><input id="a"><label>Observações</label><textarea id="o"></textarea>`,async()=>{const r=await api("POST","/casos",{titulo:val("n"),client_id:+$("#c").value,numero:val("p"),area:val("a"),obs:val("o")});go("caso",r.id)})}
+function setProx(id){ask("Próxima ação",`<label>O que precisa ser feito?</label><input id="n"><label>Data</label><input id="d" type="date">`,async()=>{await api("PATCH","/casos/"+id,{prox_acao:val("n"),prox_data:val("d")});go("caso",id)})}
+function newItem(id){ask("Novo item",`<label>Tipo</label><select id="t"><option>Tarefa</option><option>Prazo</option><option>Compromisso</option></select><label>Título</label><input id="n"><label>Data</label><input id="d" type="date">`,async()=>{await api("POST","/itens",{case_id:id,tipo:$("#t").value,titulo:val("n"),data:val("d")});go("caso",id)})}
+function upload(caseId,docId){ask(docId?"Nova versão":"Enviar documento",`<label>Arquivo (pdf, doc, docx, xls, xlsx, odt, png, jpg, txt — até 25 MB)</label><input id="f" type="file">${docId?"":'<label>Tipo</label><input id="t" placeholder="Petição, Contrato…">'}`,async()=>{const f=$("#f").files[0];if(!f)throw new Error("Escolha um arquivo.");const fm=new FormData();fm.append("arquivo",f);if(!docId)fm.append("tipo",val("t"));
+  await api("POST",docId?"/documentos/"+docId+"/versoes":"/casos/"+caseId+"/documentos",null,fm);go("caso",caseId)},"Enviar")}
+async function dl(id,n,nome){try{const r=await fetch(`/documentos/${id}/versoes/${n}/download`,{headers:{Authorization:"Bearer "+T}});if(!r.ok)throw new Error("Falha no download.");const a=document.createElement("a");a.href=URL.createObjectURL(await r.blob());a.download=nome;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1e4)}catch(e){toast(e.message)}}
+function invite(){ask("Convidar pessoa",`<label>Nome</label><input id="n"><label>E-mail</label><input id="e" type="email"><label>Função</label><select id="r"><option value="advogado">Advogado</option><option value="assistente">Assistente</option><option value="leitura">Somente leitura</option><option value="admin">Administrador</option></select>`,async()=>{
+  const r=await api("POST","/convites",{nome:val("n"),email:val("e"),role:$("#r").value});if(r.token_dev){prompt("Modo desenvolvimento: copie o link do convite",location.origin+"/#convite="+r.token_dev)}else toast("Convite enviado.");go("equipe")},"Convidar")}
+async function revoke(id){try{await api("DELETE","/convites/"+id);go("equipe")}catch(e){toast(e.message)}}
+(async()=>{try{CFG=await (await fetch("/config.json")).json()}catch(e){}
+  const [k,v]=location.hash.slice(1).split("=");
+  if(k=="verificar"&&v){try{await api("POST","/auth/verificar-email",{token:v});toast("E-mail confirmado. Entre para continuar.")}catch(e){toast(e.message)}history.replaceState(null,"",location.pathname)}
+  if(k=="convite"&&v)return acceptView(v);if(k=="redefinir"&&v)return resetView(v);
+  if(T){try{ME=await api("GET","/auth/eu");return shell()}catch(e){setT(null)}}
+  loginView()})();
+</script></body></html>
