@@ -1,0 +1,350 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Global safety net: deny everything by default
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isOptStr(data, key, maxLen) {
+      return !(key in data) || (data[key] is string && data[key].size() <= maxLen);
+    }
+
+    function isValidCreatedAt(data) {
+      return data.createdAt is timestamp && data.createdAt <= request.time;
+    }
+
+    function isValidUpdatedAt(data) {
+      return data.updatedAt is timestamp && data.updatedAt <= request.time;
+    }
+
+    function isValidHexColor(c) {
+      return c is string && c.matches('^#[0-9a-fA-F]{6}$');
+    }
+
+    function isValidUserProfile(data, userId) {
+      return data.userId == userId &&
+             data.nome is string && data.nome.size() >= 1 && data.nome.size() <= 200 &&
+             data.email is string && data.email.size() >= 3 && data.email.size() <= 254 &&
+             data.orgName is string && data.orgName.size() >= 1 && data.orgName.size() <= 200 &&
+             isOptStr(data, 'oab', 30) &&
+             isValidCreatedAt(data) &&
+             isValidUpdatedAt(data);
+    }
+
+    function isValidClient(data, userId) {
+      return data.userId == userId &&
+             data.nome is string && data.nome.size() >= 1 && data.nome.size() <= 200 &&
+             isOptStr(data, 'doc', 30) &&
+             isOptStr(data, 'email', 254) &&
+             isOptStr(data, 'tel', 30) &&
+             isOptStr(data, 'archivedAt', 40) &&
+             isValidCreatedAt(data) &&
+             isValidUpdatedAt(data);
+    }
+
+    function isValidCase(data, userId) {
+      return data.userId == userId &&
+             isValidId(data.clientId) &&
+             data.titulo is string && data.titulo.size() >= 1 && data.titulo.size() <= 300 &&
+             isOptStr(data, 'numero', 40) &&
+             isOptStr(data, 'area', 80) &&
+             data.status in ['Ativo', 'Aguardando', 'Encerrado'] &&
+             isOptStr(data, 'proxAcao', 300) &&
+             isOptStr(data, 'proxData', 20) &&
+             isOptStr(data, 'obs', 5000) &&
+             isOptStr(data, 'archivedAt', 40) &&
+             isValidCreatedAt(data) &&
+             isValidUpdatedAt(data);
+    }
+
+    function isValidItem(data, userId) {
+      return data.userId == userId &&
+             isValidId(data.caseId) &&
+             data.tipo in ['Tarefa', 'Prazo', 'Compromisso'] &&
+             data.titulo is string && data.titulo.size() >= 1 && data.titulo.size() <= 300 &&
+             data.data is string && data.data.size() == 10 &&
+             data.status in ['Pendente', 'Concluída', 'Cancelada'] &&
+             data.prio in ['Baixa', 'Média', 'Alta'] &&
+             isOptStr(data, 'origem', 300) &&
+             data.revisado is bool &&
+             isOptStr(data, 'archivedAt', 40) &&
+             isValidCreatedAt(data) &&
+             isValidUpdatedAt(data);
+    }
+
+    function isValidDocument(data, userId) {
+      return data.userId == userId &&
+             isValidId(data.caseId) &&
+             data.nome is string && data.nome.size() >= 1 && data.nome.size() <= 300 &&
+             isOptStr(data, 'tipo', 60) &&
+             data.versao is int && data.versao >= 1 &&
+             data.sha256 is string && data.sha256.size() == 64 &&
+             data.size is int && data.size >= 0 && data.size <= 26214400 &&
+             isOptStr(data, 'localPath', 600) &&
+             isOptStr(data, 'archivedAt', 40) &&
+             isValidCreatedAt(data) &&
+             isValidUpdatedAt(data);
+    }
+
+    function isValidDocVersion(data, userId, docId) {
+      return data.userId == userId &&
+             data.docId == docId &&
+             data.n is int && data.n >= 1 &&
+             data.sha256 is string && data.sha256.size() == 64 &&
+             data.size is int && data.size >= 0 && data.size <= 26214400 &&
+             isOptStr(data, 'porNome', 200) &&
+             isOptStr(data, 'localPath', 600) &&
+             isValidCreatedAt(data);
+    }
+
+    function isValidTimeline(data, userId) {
+      return data.userId == userId &&
+             isValidId(data.caseId) &&
+             data.txt is string && data.txt.size() >= 1 && data.txt.size() <= 500 &&
+             isOptStr(data, 'autor', 200) &&
+             isValidCreatedAt(data);
+    }
+
+    function isValidNotification(data, userId) {
+      return data.userId == userId &&
+             data.txt is string && data.txt.size() >= 1 && data.txt.size() <= 500 &&
+             data.notifKey is string && data.notifKey.size() >= 1 && data.notifKey.size() <= 150 &&
+             data.lida is bool &&
+             isValidCreatedAt(data) &&
+             isValidUpdatedAt(data);
+    }
+
+    function isValidAudit(data, userId) {
+      return data.userId == userId &&
+             data.acao is string && data.acao.size() >= 1 && data.acao.size() <= 300 &&
+             isOptStr(data, 'entity', 60) &&
+             isOptStr(data, 'entityRef', 128) &&
+             isOptStr(data, 'usuario', 200) &&
+             isValidCreatedAt(data);
+    }
+
+    function isValidTeamMember(data, userId) {
+      return data.userId == userId &&
+             data.nome is string && data.nome.size() >= 1 && data.nome.size() <= 200 &&
+             data.email is string && data.email.size() >= 3 && data.email.size() <= 254 &&
+             data.role in ['admin', 'advogado', 'assistente', 'leitura'] &&
+             data.status in ['ativo', 'inativo'] &&
+             isValidCreatedAt(data) &&
+             isValidUpdatedAt(data);
+    }
+
+    function isValidInvite(data, userId) {
+      return data.userId == userId &&
+             isOptStr(data, 'nome', 200) &&
+             data.email is string && data.email.size() >= 3 && data.email.size() <= 254 &&
+             data.role in ['admin', 'advogado', 'assistente', 'leitura'] &&
+             data.status in ['pendente', 'aceito', 'revogado'] &&
+             data.expiresAt is string && data.expiresAt.size() >= 10 && data.expiresAt.size() <= 40 &&
+             isValidCreatedAt(data) &&
+             isValidUpdatedAt(data);
+    }
+
+    function isValidBranding(data, userId) {
+      return data.userId == userId &&
+             isValidHexColor(data.azulEscuro) &&
+             isValidHexColor(data.azul) &&
+             isValidHexColor(data.dourado) &&
+             isValidCreatedAt(data) &&
+             isValidUpdatedAt(data);
+    }
+
+    match /users/{userId} {
+      allow get: if isOwner(userId) && isValidId(userId);
+      allow list: if false;
+      allow create: if isOwner(userId) && isValidId(userId) &&
+                       incoming().keys().hasAll(['userId', 'nome', 'email', 'orgName', 'createdAt', 'updatedAt']) &&
+                       incoming().keys().hasOnly(['userId', 'nome', 'email', 'orgName', 'oab', 'createdAt', 'updatedAt']) &&
+                       isValidUserProfile(incoming(), userId);
+      allow update: if isOwner(userId) && isValidId(userId) &&
+                       isValidUserProfile(incoming(), userId) &&
+                       incoming().userId == existing().userId &&
+                       incoming().createdAt == existing().createdAt &&
+                       incoming().diff(existing()).affectedKeys().hasOnly(['nome', 'orgName', 'oab', 'updatedAt']);
+      allow delete: if false;
+
+      match /clients/{clientId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && isValidId(clientId);
+        allow create: if isOwner(userId) && isValidId(clientId) &&
+                         incoming().keys().hasAll(['userId', 'nome', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'nome', 'doc', 'email', 'tel', 'archivedAt', 'createdAt', 'updatedAt']) &&
+                         isValidClient(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(clientId) &&
+                         isValidClient(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['nome', 'doc', 'email', 'tel', 'archivedAt', 'updatedAt']);
+        allow delete: if false;
+      }
+
+      match /cases/{caseId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && isValidId(caseId);
+        allow create: if isOwner(userId) && isValidId(caseId) &&
+                         incoming().keys().hasAll(['userId', 'clientId', 'titulo', 'status', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'clientId', 'titulo', 'numero', 'area', 'status', 'proxAcao', 'proxData', 'obs', 'archivedAt', 'createdAt', 'updatedAt']) &&
+                         isValidCase(incoming(), userId) &&
+                         exists(/databases/$(database)/documents/users/$(userId)/clients/$(incoming().clientId));
+        allow update: if isOwner(userId) && isValidId(caseId) &&
+                         isValidCase(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().clientId == existing().clientId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['titulo', 'numero', 'area', 'status', 'proxAcao', 'proxData', 'obs', 'archivedAt', 'updatedAt']);
+        allow delete: if false;
+      }
+
+      match /items/{itemId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && isValidId(itemId);
+        allow create: if isOwner(userId) && isValidId(itemId) &&
+                         incoming().keys().hasAll(['userId', 'caseId', 'tipo', 'titulo', 'data', 'status', 'prio', 'revisado', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'caseId', 'tipo', 'titulo', 'data', 'status', 'prio', 'origem', 'revisado', 'archivedAt', 'createdAt', 'updatedAt']) &&
+                         isValidItem(incoming(), userId) &&
+                         exists(/databases/$(database)/documents/users/$(userId)/cases/$(incoming().caseId));
+        allow update: if isOwner(userId) && isValidId(itemId) &&
+                         isValidItem(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().caseId == existing().caseId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['titulo', 'data', 'status', 'prio', 'revisado', 'archivedAt', 'updatedAt']);
+        allow delete: if false;
+      }
+
+      match /documents/{docId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && isValidId(docId);
+        allow create: if isOwner(userId) && isValidId(docId) &&
+                         incoming().keys().hasAll(['userId', 'caseId', 'nome', 'versao', 'sha256', 'size', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'caseId', 'nome', 'tipo', 'versao', 'sha256', 'size', 'localPath', 'archivedAt', 'createdAt', 'updatedAt']) &&
+                         isValidDocument(incoming(), userId) &&
+                         exists(/databases/$(database)/documents/users/$(userId)/cases/$(incoming().caseId));
+        allow update: if isOwner(userId) && isValidId(docId) &&
+                         isValidDocument(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().caseId == existing().caseId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['versao', 'sha256', 'size', 'localPath', 'archivedAt', 'updatedAt']);
+        allow delete: if false;
+
+        match /versions/{verId} {
+          allow list: if isOwner(userId);
+          allow get: if isOwner(userId) && isValidId(docId) && isValidId(verId);
+          allow create: if isOwner(userId) && isValidId(docId) && isValidId(verId) &&
+                           incoming().keys().hasAll(['userId', 'docId', 'n', 'sha256', 'size', 'createdAt']) &&
+                           incoming().keys().hasOnly(['userId', 'docId', 'n', 'sha256', 'size', 'porNome', 'localPath', 'createdAt']) &&
+                           isValidDocVersion(incoming(), userId, docId);
+          allow update, delete: if false;
+        }
+      }
+
+      match /timeline/{entryId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && isValidId(entryId);
+        allow create: if isOwner(userId) && isValidId(entryId) &&
+                         incoming().keys().hasAll(['userId', 'caseId', 'txt', 'createdAt']) &&
+                         incoming().keys().hasOnly(['userId', 'caseId', 'txt', 'autor', 'createdAt']) &&
+                         isValidTimeline(incoming(), userId);
+        allow update, delete: if false;
+      }
+
+      match /notifications/{notifId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && isValidId(notifId);
+        allow create: if isOwner(userId) && isValidId(notifId) &&
+                         incoming().keys().hasAll(['userId', 'txt', 'notifKey', 'lida', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'txt', 'notifKey', 'lida', 'createdAt', 'updatedAt']) &&
+                         isValidNotification(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(notifId) &&
+                         isValidNotification(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().notifKey == existing().notifKey &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['lida', 'updatedAt']);
+        allow delete: if false;
+      }
+
+      match /audit/{auditId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && isValidId(auditId);
+        allow create: if isOwner(userId) && isValidId(auditId) &&
+                         incoming().keys().hasAll(['userId', 'acao', 'createdAt']) &&
+                         incoming().keys().hasOnly(['userId', 'acao', 'entity', 'entityRef', 'usuario', 'createdAt']) &&
+                         isValidAudit(incoming(), userId);
+        allow update, delete: if false;
+      }
+
+      match /team_members/{memberId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && isValidId(memberId);
+        allow create: if isOwner(userId) && isValidId(memberId) &&
+                         incoming().keys().hasAll(['userId', 'nome', 'email', 'role', 'status', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'nome', 'email', 'role', 'status', 'createdAt', 'updatedAt']) &&
+                         isValidTeamMember(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(memberId) &&
+                         isValidTeamMember(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['role', 'status', 'updatedAt']);
+        allow delete: if false;
+      }
+
+      match /invites/{inviteId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && isValidId(inviteId);
+        allow create: if isOwner(userId) && isValidId(inviteId) &&
+                         incoming().keys().hasAll(['userId', 'email', 'role', 'status', 'expiresAt', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'nome', 'email', 'role', 'status', 'expiresAt', 'createdAt', 'updatedAt']) &&
+                         isValidInvite(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(inviteId) &&
+                         isValidInvite(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().email == existing().email &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['status', 'expiresAt', 'updatedAt']);
+        allow delete: if false;
+      }
+
+      match /branding/{configId} {
+        allow list: if isOwner(userId);
+        allow get: if isOwner(userId) && isValidId(configId);
+        allow create: if isOwner(userId) && isValidId(configId) &&
+                         incoming().keys().hasAll(['userId', 'azulEscuro', 'azul', 'dourado', 'createdAt', 'updatedAt']) &&
+                         incoming().keys().hasOnly(['userId', 'azulEscuro', 'azul', 'dourado', 'createdAt', 'updatedAt']) &&
+                         isValidBranding(incoming(), userId);
+        allow update: if isOwner(userId) && isValidId(configId) &&
+                         isValidBranding(incoming(), userId) &&
+                         incoming().userId == existing().userId &&
+                         incoming().createdAt == existing().createdAt &&
+                         incoming().diff(existing()).affectedKeys().hasOnly(['azulEscuro', 'azul', 'dourado', 'updatedAt']);
+        allow delete: if isOwner(userId) && isValidId(configId);
+      }
+    }
+  }
+}

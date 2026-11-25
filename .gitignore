@@ -1,6 +1,6 @@
-__pycache__/
-*.pyc
-*.db
-uploads/
+.gradle/
+build/
+app/build/
 .env
-venv/
+*-debug.log
+uploads/

@@ -1,0 +1,246 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Authenticated lawyer profile and office metadata.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "Firebase Auth UID of the owner." },
+        "nome": { "type": "string", "description": "Display name." },
+        "email": { "type": "string", "description": "Email address." },
+        "orgName": { "type": "string", "description": "Law firm or practice name." },
+        "oab": { "type": "string", "description": "Optional OAB registration." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Server timestamp on creation." },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Server timestamp on update." }
+      },
+      "required": ["userId", "nome", "email", "orgName", "createdAt", "updatedAt"]
+    },
+    "Client": {
+      "title": "Client",
+      "description": "Legal client belonging to the authenticated office.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "nome": { "type": "string" },
+        "doc": { "type": "string" },
+        "email": { "type": "string" },
+        "tel": { "type": "string" },
+        "archivedAt": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "nome", "createdAt", "updatedAt"]
+    },
+    "LegalCase": {
+      "title": "LegalCase",
+      "description": "Legal case linked to a client.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "clientId": { "type": "string" },
+        "titulo": { "type": "string" },
+        "numero": { "type": "string" },
+        "area": { "type": "string" },
+        "status": { "type": "string", "enum": ["Ativo", "Aguardando", "Encerrado"] },
+        "proxAcao": { "type": "string" },
+        "proxData": { "type": "string" },
+        "obs": { "type": "string" },
+        "archivedAt": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "clientId", "titulo", "status", "createdAt", "updatedAt"]
+    },
+    "CaseItem": {
+      "title": "CaseItem",
+      "description": "Task, deadline (Prazo), or appointment (Compromisso) on a case.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "caseId": { "type": "string" },
+        "tipo": { "type": "string", "enum": ["Tarefa", "Prazo", "Compromisso"] },
+        "titulo": { "type": "string" },
+        "data": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pendente", "Concluída", "Cancelada"] },
+        "prio": { "type": "string", "enum": ["Baixa", "Média", "Alta"] },
+        "origem": { "type": "string" },
+        "revisado": { "type": "boolean" },
+        "archivedAt": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "caseId", "tipo", "titulo", "data", "status", "prio", "revisado", "createdAt", "updatedAt"]
+    },
+    "CaseDocument": {
+      "title": "CaseDocument",
+      "description": "Metadata for a versioned case document.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "caseId": { "type": "string" },
+        "nome": { "type": "string" },
+        "tipo": { "type": "string" },
+        "versao": { "type": "integer" },
+        "sha256": { "type": "string" },
+        "size": { "type": "integer" },
+        "localPath": { "type": "string" },
+        "archivedAt": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "caseId", "nome", "versao", "sha256", "size", "createdAt", "updatedAt"]
+    },
+    "DocVersion": {
+      "title": "DocVersion",
+      "description": "Immutable version record for a case document.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "docId": { "type": "string" },
+        "n": { "type": "integer" },
+        "sha256": { "type": "string" },
+        "size": { "type": "integer" },
+        "porNome": { "type": "string" },
+        "localPath": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "docId", "n", "sha256", "size", "createdAt"]
+    },
+    "TimelineEntry": {
+      "title": "TimelineEntry",
+      "description": "Chronological case activity event.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "caseId": { "type": "string" },
+        "txt": { "type": "string" },
+        "autor": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "caseId", "txt", "createdAt"]
+    },
+    "NotificationItem": {
+      "title": "NotificationItem",
+      "description": "Deadline alert notification.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "txt": { "type": "string" },
+        "notifKey": { "type": "string" },
+        "lida": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "txt", "notifKey", "lida", "createdAt", "updatedAt"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Immutable audit log entry.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "acao": { "type": "string" },
+        "entity": { "type": "string" },
+        "entityRef": { "type": "string" },
+        "usuario": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "acao", "createdAt"]
+    },
+    "TeamMember": {
+      "title": "TeamMember",
+      "description": "Office team member directory entry.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "nome": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "advogado", "assistente", "leitura"] },
+        "status": { "type": "string", "enum": ["ativo", "inativo"] },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "nome", "email", "role", "status", "createdAt", "updatedAt"]
+    },
+    "TeamInvite": {
+      "title": "TeamInvite",
+      "description": "Invitation sent to a team colleague.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "nome": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "advogado", "assistente", "leitura"] },
+        "status": { "type": "string", "enum": ["pendente", "aceito", "revogado"] },
+        "expiresAt": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "email", "role", "status", "expiresAt", "createdAt", "updatedAt"]
+    },
+    "BrandConfig": {
+      "title": "BrandConfig",
+      "description": "Visual branding palette configuration.",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "azulEscuro": { "type": "string" },
+        "azul": { "type": "string" },
+        "dourado": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["userId", "azulEscuro", "azul", "dourado", "createdAt", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "User profile and office configuration."
+    },
+    "/users/{userId}/clients/{clientId}": {
+      "schema": { "$ref": "#/entities/Client" },
+      "description": "Clients owned by user."
+    },
+    "/users/{userId}/cases/{caseId}": {
+      "schema": { "$ref": "#/entities/LegalCase" },
+      "description": "Legal cases owned by user."
+    },
+    "/users/{userId}/items/{itemId}": {
+      "schema": { "$ref": "#/entities/CaseItem" },
+      "description": "Tasks, deadlines, and appointments owned by user."
+    },
+    "/users/{userId}/documents/{docId}": {
+      "schema": { "$ref": "#/entities/CaseDocument" },
+      "description": "Document metadata owned by user."
+    },
+    "/users/{userId}/documents/{docId}/versions/{verId}": {
+      "schema": { "$ref": "#/entities/DocVersion" },
+      "description": "Immutable document version history."
+    },
+    "/users/{userId}/timeline/{entryId}": {
+      "schema": { "$ref": "#/entities/TimelineEntry" },
+      "description": "Case timeline entries."
+    },
+    "/users/{userId}/notifications/{notifId}": {
+      "schema": { "$ref": "#/entities/NotificationItem" },
+      "description": "Deadline alert notifications."
+    },
+    "/users/{userId}/audit/{auditId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "Immutable audit entries."
+    },
+    "/users/{userId}/team_members/{memberId}": {
+      "schema": { "$ref": "#/entities/TeamMember" },
+      "description": "Team members in the office."
+    },
+    "/users/{userId}/invites/{inviteId}": {
+      "schema": { "$ref": "#/entities/TeamInvite" },
+      "description": "Team invitations."
+    },
+    "/users/{userId}/branding/{configId}": {
+      "schema": { "$ref": "#/entities/BrandConfig" },
+      "description": "Office color palette branding."
+    }
+  }
+}

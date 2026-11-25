@@ -1,0 +1,6 @@
+{
+  "name": "Prajus",
+  "description": "Gestão jurídica para advogados autônomos e pequenos escritórios: casos, prazos com confirmação humana, clientes, documentos versionados, linha do tempo, equipe e identidade visual.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

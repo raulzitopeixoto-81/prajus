@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Prajus</string>
+    <string name="brand_subtitle">Gestão jurídica para advogados autônomos e pequenos escritórios.</string>
+    <string name="nav_hoje">Hoje</string>
+    <string name="nav_casos">Casos</string>
+    <string name="nav_clientes">Clientes</string>
+    <string name="nav_equipe">Equipe</string>
+    <string name="nav_auditoria">Auditoria</string>
+    <string name="nav_aparencia">Aparência</string>
+    <string name="nav_seguranca">Segurança e Sessões</string>
+    <string name="nav_sair">Sair</string>
+    <string name="cd_logo_prajus">Logotipo do escritório</string>
+    <string name="cd_buscar">Buscar no escritório</string>
+    <string name="cd_notificacoes">Notificações e alertas de prazo</string>
+    <string name="cd_menu">Abrir menu de navegação</string>
+    <string name="cd_voltar">Voltar</string>
+    <string name="cd_novo_caso">Criar novo caso</string>
+    <string name="cd_novo_cliente">Cadastrar novo cliente</string>
+    <string name="cd_convidar">Convidar pessoa para a equipe</string>
+</resources>
