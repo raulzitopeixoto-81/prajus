@@ -1,10 +1,15 @@
 package com.example.ui.screens
 
+import android.app.Activity
 import android.content.Intent
+import android.speech.RecognizerIntent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -94,6 +99,35 @@ fun CasoDetailScreen(
         return
     }
 
+    val activeClients by viewModel.activeClientsForMap.collectAsStateWithLifecycle()
+    val clientName = remember(activeClients, c.clientId) {
+        activeClients.firstOrNull { it.id == c.clientId }?.nome ?: "—"
+    }
+
+    val pdfReportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/pdf")
+    ) { uri ->
+        if (uri != null) {
+            viewModel.loadTimelineForReport(c.id) { loadedTimeline, orgName, authorName ->
+                CasePdfReportGenerator.writeReportToUri(
+                    context = context,
+                    outputUri = uri,
+                    orgName = orgName,
+                    authorName = authorName,
+                    caseEntity = c,
+                    clientName = clientName,
+                    pendingItems = items.filter { it.status != "Concluída" },
+                    documents = docs,
+                    timeline = loadedTimeline.ifEmpty { timeline }
+                ).onSuccess {
+                    viewModel.emitMessage("Relatório PDF salvo com sucesso.")
+                }.onFailure { err ->
+                    viewModel.emitMessage(err.localizedMessage ?: "Erro ao gerar relatório PDF.")
+                }
+            }
+        }
+    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -125,9 +159,21 @@ fun CasoDetailScreen(
                     )
 
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
+                        FilledTonalButton(
+                            onClick = {
+                                pdfReportLauncher.launch(CasePdfReportGenerator.suggestedFileName(c.titulo))
+                            },
+                            modifier = Modifier.testTag("case_download_report_button")
+                        ) {
+                            Icon(Icons.Outlined.PictureAsPdf, contentDescription = null, modifier = Modifier.size(18.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Baixar relatório")
+                        }
                         if (canWrite) {
                             OutlinedButton(
                                 onClick = { showNextActionDialog = true },
@@ -310,10 +356,17 @@ fun CasoDetailScreen(
                             Column(modifier = Modifier.fillMaxWidth()) {
                                 Text(d.nome, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.SemiBold)
                                 Text(
-                                    "${d.tipo ?: "Outro"} · versão ${d.versao} · ${SecurityUtils.formatTimestampDateBr(d.createdAt)}",
+                                    "${d.tipo ?: "Outro"} · v${d.versao} · ${formatDocSize(d.size)} · ${SecurityUtils.formatTimestampDateTimeBr(d.updatedAt ?: d.createdAt)}",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = brandColors.mutedText
                                 )
+                                if (d.sha256.isNotBlank()) {
+                                    Text(
+                                        "SHA-256: ${d.sha256.take(16)}…",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = brandColors.mutedText
+                                    )
+                                }
                                 Spacer(modifier = Modifier.height(6.dp))
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     OutlinedButton(
@@ -440,6 +493,19 @@ fun CasoDetailScreen(
         var status by remember { mutableStateOf(c.status) }
         var obs by remember { mutableStateOf(c.obs.orEmpty()) }
         var err by remember { mutableStateOf<String?>(null) }
+        val voiceLauncher = rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val spoken = result.data
+                    ?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)
+                    ?.firstOrNull()
+                    ?.trim()
+                if (!spoken.isNullOrEmpty()) {
+                    obs = if (obs.isBlank()) spoken else "${obs.trimEnd()}\n$spoken"
+                }
+            }
+        }
         AlertDialog(
             onDismissRequest = { showEditCaseDialog = false },
             title = { Text("Editar caso") },
@@ -453,7 +519,33 @@ fun CasoDetailScreen(
                             FilterChip(selected = status == st, onClick = { status = st }, label = { Text(st) })
                         }
                     }
-                    OutlinedTextField(value = obs, onValueChange = { obs = it }, label = { Text("Observações") }, minLines = 2, maxLines = 4, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(
+                        value = obs,
+                        onValueChange = { obs = it },
+                        label = { Text("Observações / Nota de voz") },
+                        minLines = 2,
+                        maxLines = 4,
+                        trailingIcon = {
+                            IconButton(
+                                onClick = {
+                                    val speechIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
+                                        putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                                        putExtra(RecognizerIntent.EXTRA_LANGUAGE, "pt-BR")
+                                        putExtra(RecognizerIntent.EXTRA_PROMPT, "Fale sua nota para o caso")
+                                    }
+                                    runCatching { voiceLauncher.launch(speechIntent) }.onFailure {
+                                        viewModel.emitMessage("Ditado por voz indisponível neste dispositivo.")
+                                    }
+                                },
+                                modifier = Modifier
+                                    .minimumInteractiveComponentSize()
+                                    .testTag("case_edit_voice_memo_button")
+                            ) {
+                                Icon(Icons.Outlined.Mic, contentDescription = "Ditar nota de voz")
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    )
                     if (err != null) Text(err!!, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                 }
             },
@@ -566,16 +658,30 @@ fun CasoDetailScreen(
     }
 
     if (uploadTypeDialog) {
+        val typePresets = remember { listOf("Petição", "Contrato", "Procuração", "Comprovante", "Outro") }
         AlertDialog(
             onDismissRequest = { uploadTypeDialog = false },
             title = { Text("Enviar documento") },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(
-                        "Formatos: pdf, doc, docx, xls, xlsx, odt, png, jpg, txt (até 25 MB).",
+                        "Formatos: pdf, doc, docx, xls, xlsx, odt, png, jpg, txt (até 25 MB). Metadados salvos no Firestore.",
                         style = MaterialTheme.typography.bodySmall,
                         color = brandColors.mutedText
                     )
+                    @OptIn(ExperimentalLayoutApi::class)
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        typePresets.forEach { preset ->
+                            FilterChip(
+                                selected = pendingDocType.equals(preset, ignoreCase = true),
+                                onClick = { pendingDocType = preset },
+                                label = { Text(preset) }
+                            )
+                        }
+                    }
                     OutlinedTextField(
                         value = pendingDocType,
                         onValueChange = { pendingDocType = it },
@@ -641,5 +747,13 @@ fun CasoDetailScreen(
                 TextButton(onClick = { versionsSheetDoc = null }) { Text("Fechar") }
             }
         )
+    }
+}
+
+private fun formatDocSize(bytes: Long): String {
+    return when {
+        bytes >= 1024L * 1024L -> String.format("%.2f MB", bytes / (1024.0 * 1024.0))
+        bytes >= 1024L -> String.format("%.1f KB", bytes / 1024.0)
+        else -> "$bytes B"
     }
 }

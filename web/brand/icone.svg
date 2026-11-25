@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Prajus">
+  <rect width="120" height="120" rx="26" fill="#1D2F4D"/>
+  <path d="M27 50C27 44 32 40 38 40H51V88H43V48H27V50Z" fill="#FFFFFF"/>
+  <path d="M27 55H42C42 61 38.5 65 34.5 65C30.5 65 27 61 27 55Z" fill="#CFA75B"/>
+  <rect x="58" y="30" width="8" height="58" rx="4" fill="#FFFFFF"/>
+  <path d="M72 30C88.5 30 98 42.5 98 58C98 73.5 88.5 84 72 86V76C82.5 74.5 88 67 88 58C88 49 82.5 40 72 40V30Z" fill="#CFA75B"/>
+</svg>

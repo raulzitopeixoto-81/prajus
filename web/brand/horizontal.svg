@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 84" role="img" aria-label="PraJus">
+  <path d="M12 36C12 31 16 27 21 27H36V72H28V35H12V36Z" fill="#1D2F4D"/>
+  <path d="M12 41H26C26 47 22.8 51 19 51C15.2 51 12 47 12 41Z" fill="#CFA75B"/>
+  <rect x="43" y="14" width="8" height="58" rx="4" fill="#1D2F4D"/>
+  <path d="M57 14C73.5 14 83 26.5 83 42C83 57.5 73.5 68 57 70V60C67.5 58.5 73 51 73 42C73 33 67.5 24 57 24V14Z" fill="#CFA75B"/>
+  <text x="102" y="57" font-family="ui-rounded, 'Avenir Next', 'Segoe UI', system-ui, sans-serif" font-size="42" font-weight="800" letter-spacing="-0.5">
+    <tspan fill="#1D2F4D">Pra</tspan><tspan fill="#CFA75B">Jus</tspan>
+  </text>
+</svg>

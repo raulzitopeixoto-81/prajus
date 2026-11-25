@@ -27,6 +27,19 @@ data class CasesOverviewStats(
     val missingNextActionCount: Int = 0
 )
 
+enum class CaseSortOption(val label: String) {
+    DATE_CREATED("Data de criação"),
+    CLIENT_NAME("Nome do cliente"),
+    NEXT_DEADLINE("Próximo prazo")
+}
+
+private data class CasesFilterParams(
+    val archived: Boolean,
+    val query: String,
+    val statusFilter: String?,
+    val sortOption: CaseSortOption
+)
+
 @OptIn(ExperimentalCoroutinesApi::class)
 class MainViewModel(
     private val repo: PrajusRepository,
@@ -46,6 +59,9 @@ class MainViewModel(
 
     private val _casesStatusFilter = MutableStateFlow<String?>(null)
     val casesStatusFilter: StateFlow<String?> = _casesStatusFilter.asStateFlow()
+
+    private val _casesSortOption = MutableStateFlow(CaseSortOption.NEXT_DEADLINE)
+    val casesSortOption: StateFlow<CaseSortOption> = _casesSortOption.asStateFlow()
 
     private val _clientsQuery = MutableStateFlow("")
     val clientsQuery: StateFlow<String> = _clientsQuery.asStateFlow()
@@ -117,6 +133,14 @@ class MainViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), emptyMap())
 
+    val documentsByCaseId: StateFlow<Map<String, List<CaseDocumentDoc>>> = allDocumentsFlow
+        .map { docs ->
+            docs.asSequence()
+                .filter { it.archivedAt == null }
+                .groupBy { it.caseId }
+        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), emptyMap())
+
     val casesOverviewStats: StateFlow<CasesOverviewStats> = combine(
         allCasesFlow,
         pendingItemsByCaseId
@@ -151,10 +175,14 @@ class MainViewModel(
         combine(allCasesFlow, allClientsFlow, pendingItemsByCaseId) { cases, clients, itemsByCase ->
             Triple(cases, clients.associateBy({ it.id }, { it.nome }), itemsByCase)
         },
-        _showArchivedCases,
-        _casesQuery,
-        _casesStatusFilter
-    ) { (list, clientNames, itemsByCase), archived, q, statusFilter ->
+        combine(_showArchivedCases, _casesQuery, _casesStatusFilter, _casesSortOption) { archived, q, statusFilter, sortOption ->
+            CasesFilterParams(archived, q, statusFilter, sortOption)
+        }
+    ) { (list, clientNames, itemsByCase), params ->
+        val archived = params.archived
+        val q = params.query
+        val statusFilter = params.statusFilter
+        val sortOption = params.sortOption
         val filteredByArchive = list.filter { if (archived) it.archivedAt != null else it.archivedAt == null }
         val filteredByStatus = when {
             archived || statusFilter == null -> filteredByArchive
@@ -164,24 +192,37 @@ class MainViewModel(
             else -> filteredByArchive.filter { it.status == statusFilter }
         }
         val clean = q.trim().lowercase()
+        val cleanNorm = normalizeSearchText(clean)
+        val cleanDigits = clean.filter { it.isDigit() }
         val searched = if (clean.isEmpty()) {
             filteredByStatus
         } else {
             filteredByStatus.filter {
-                it.titulo.lowercase().contains(clean) ||
-                    (it.numero?.lowercase()?.contains(clean) == true) ||
-                    (it.obs?.lowercase()?.contains(clean) == true) ||
-                    (it.area?.lowercase()?.contains(clean) == true) ||
-                    (clientNames[it.clientId]?.lowercase()?.contains(clean) == true)
+                normalizeSearchText(it.titulo).contains(cleanNorm) ||
+                    (it.numero?.let { num ->
+                        normalizeSearchText(num).contains(cleanNorm) ||
+                            (cleanDigits.isNotEmpty() && num.filter { ch -> ch.isDigit() }.contains(cleanDigits))
+                    } == true) ||
+                    (it.obs?.let { obs -> normalizeSearchText(obs).contains(cleanNorm) } == true) ||
+                    (it.area?.let { area -> normalizeSearchText(area).contains(cleanNorm) } == true) ||
+                    (clientNames[it.clientId]?.let { name -> normalizeSearchText(name).contains(cleanNorm) } == true)
             }
         }
-        if (archived) {
-            searched
-        } else {
-            searched.sortedWith(
+        when (sortOption) {
+            CaseSortOption.DATE_CREATED -> searched.sortedWith(
+                compareByDescending<LegalCaseDoc> {
+                    it.createdAt?.toDate()?.time ?: it.updatedAt?.toDate()?.time ?: 0L
+                }.thenBy { normalizeSearchText(it.titulo) }
+            )
+            CaseSortOption.CLIENT_NAME -> searched.sortedWith(
+                compareBy<LegalCaseDoc> {
+                    normalizeSearchText(clientNames[it.clientId] ?: "zzz")
+                }.thenBy { normalizeSearchText(it.titulo) }
+            )
+            CaseSortOption.NEXT_DEADLINE -> searched.sortedWith(
                 compareBy<LegalCaseDoc> { c ->
                     itemsByCase[c.id]?.firstOrNull()?.data ?: c.proxData ?: "9999-12-31"
-                }.thenBy { it.titulo.lowercase() }
+                }.thenBy { normalizeSearchText(it.titulo) }
             )
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MILLIS), emptyList())
@@ -271,6 +312,7 @@ class MainViewModel(
     fun setCasesQuery(q: String) { _casesQuery.value = q }
     fun setShowArchivedCases(archived: Boolean) { _showArchivedCases.value = archived }
     fun setCasesStatusFilter(status: String?) { _casesStatusFilter.value = status }
+    fun setCasesSortOption(option: CaseSortOption) { _casesSortOption.value = option }
     fun setClientsQuery(q: String) { _clientsQuery.value = q }
     fun setShowArchivedClients(archived: Boolean) { _showArchivedClients.value = archived }
 
@@ -499,6 +541,18 @@ class MainViewModel(
         }
     }
 
+    fun loadTimelineForReport(
+        caseId: String,
+        onLoaded: (timeline: List<TimelineDoc>, orgName: String, authorName: String) -> Unit
+    ) {
+        viewModelScope.launch {
+            val timeline = observeTimeline(caseId).firstOrNull().orEmpty()
+            val orgName = (profileState.value as? ProfileUiState.Ready)?.profile?.orgName
+                ?.takeIf { it.isNotBlank() } ?: "Prajus – Gestão Jurídica"
+            onLoaded(timeline, orgName, currentAuthorName())
+        }
+    }
+
     // ---------- Team, Search, Notifications, Audit, Export/Import, Branding ----------
 
     fun createInvite(
@@ -642,5 +696,11 @@ class MainViewModel(
     private companion object {
         const val TAG = "MainViewModel"
         const val STOP_TIMEOUT_MILLIS = 5000L
+        private val DIACRITICS_REGEX = "\\p{InCombiningDiacriticalMarks}+".toRegex()
+
+        fun normalizeSearchText(raw: String): String {
+            val decomposed = java.text.Normalizer.normalize(raw.trim().lowercase(), java.text.Normalizer.Form.NFD)
+            return DIACRITICS_REGEX.replace(decomposed, "")
+        }
     }
 }

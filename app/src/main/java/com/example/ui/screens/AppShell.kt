@@ -65,10 +65,12 @@ fun AppShell(
     val hojeDashboard by viewModel.hojeDashboard.collectAsStateWithLifecycle()
     val casesList by viewModel.casesList.collectAsStateWithLifecycle()
     val pendingItemsByCase by viewModel.pendingItemsByCaseId.collectAsStateWithLifecycle()
+    val documentsByCase by viewModel.documentsByCaseId.collectAsStateWithLifecycle()
     val casesOverviewStats by viewModel.casesOverviewStats.collectAsStateWithLifecycle()
     val casesQuery by viewModel.casesQuery.collectAsStateWithLifecycle()
     val showArchivedCases by viewModel.showArchivedCases.collectAsStateWithLifecycle()
     val casesStatusFilter by viewModel.casesStatusFilter.collectAsStateWithLifecycle()
+    val casesSortOption by viewModel.casesSortOption.collectAsStateWithLifecycle()
     val activeClients by viewModel.activeClientsForMap.collectAsStateWithLifecycle()
     val clientsList by viewModel.clientsList.collectAsStateWithLifecycle()
     val clientsQuery by viewModel.clientsQuery.collectAsStateWithLifecycle()
@@ -277,17 +279,44 @@ fun AppShell(
                                 cases = casesList,
                                 clients = activeClients,
                                 deadlinesByCase = pendingItemsByCase,
+                                documentsByCase = documentsByCase,
                                 overviewStats = casesOverviewStats,
                                 query = casesQuery,
                                 showArchived = showArchivedCases,
                                 statusFilter = casesStatusFilter,
+                                sortOption = casesSortOption,
                                 permissions = permissions,
                                 onQueryChange = { viewModel.setCasesQuery(it) },
                                 onToggleArchived = { viewModel.setShowArchivedCases(it) },
                                 onStatusFilterChange = { viewModel.setCasesStatusFilter(it) },
+                                onSortOptionChange = { viewModel.setCasesSortOption(it) },
                                 onOpenCase = { navController.navigate(PrajusRoute.CasoDetail(it)) },
                                 onCreateCase = { t, cid, num, area, obs, ok, err ->
                                     viewModel.createCase(t, cid, num, area, obs, ok, err)
+                                },
+                                onSaveCaseObs = { c, obs, ok, err ->
+                                    viewModel.updateCaseDetails(
+                                        c.id,
+                                        c.titulo,
+                                        c.numero.orEmpty(),
+                                        c.area.orEmpty(),
+                                        c.status,
+                                        obs,
+                                        ok,
+                                        err
+                                    )
+                                },
+                                onUploadDocument = { caseId, uri, tipo, existingDocId ->
+                                    viewModel.uploadDocument(caseId, uri, tipo, existingDocId)
+                                },
+                                onDownloadDocument = { docId, version, onReady ->
+                                    viewModel.prepareDocumentDownload(docId, version, onReady)
+                                },
+                                onArchiveDocument = { docId ->
+                                    viewModel.archiveDocument(docId)
+                                },
+                                onLoadTimelineForReport = { caseId, onLoaded ->
+                                    viewModel.loadTimelineForReport(caseId, onLoaded)
                                 },
                                 onRestoreCase = { c ->
                                     viewModel.archiveCase(c.id, c.titulo, restore = true)
